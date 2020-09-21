@@ -6,12 +6,48 @@
 #include <functional>
 #include <assert.h>
 #include <iostream>
-//堆排序写在后面
+
+/*T需要有 T()构造，因为0下标需要插入一个开始的空值 */
+/*heap 功能类似优先级队列 2个static函数提供了额外的建堆堆化操作*/
 template <class T,
           class Container = std::vector<T>,
           class Compare = std::less<typename Container::value_type>>
 class Heap
 {
+
+public:
+    //原地建堆 需要增加一个空节点到开头
+    static void buildHeap(std::vector<T> &data)
+    {
+        //先增加一个空节点到开头，数组从后往前处理，堆化则从上到下，叶子节点不需要比较，直接从非叶子节点开始
+        int n = data.size() - 1;
+        for (int i = n / 2; i >= 1; i--)
+        {
+            HeapifyToDown(data, n, i);
+        }
+    }
+    //n表示实际的数据个数
+    static void HeapifyToDown(std::vector<T> &data, int n, int currentIndex)
+    {
+
+        //叶子节点停止
+        // while (currentIndex * 2 <= n)
+        while (true)
+        {
+            int chilidIndex = chooseHeapiFynode(data, n, currentIndex);
+            if (chilidIndex == currentIndex)
+            {
+                break;
+            }
+            else
+            {
+                std::swap(data[currentIndex], data[chilidIndex]);
+                currentIndex = chilidIndex;
+                // continue;
+            }
+        }
+    }
+
 public:
     Heap() : _toStringFunc(nullptr)
     {
@@ -74,40 +110,6 @@ public:
     }
 
 public:
-    //原地建堆
-    static void buildHeap(std::vector<T> &data)
-    {
-        //先增加一个空节点到开头，数组从后往前处理，堆化则从上到下，叶子节点不需要比较，直接从非叶子节点开始
-        data.insert(data.begin(), T());
-        int n = data.size() - 1;
-        for (int i = n / 2; i >= 1; i--)
-        {
-            HeapifyToDown(data, n, i);
-        }
-    }
-
-    static void HeapifyToDown(std::vector<T> &data, int n, int currentIndex)
-    {
-
-        //叶子节点停止
-        // while (currentIndex * 2 <= n)
-        while (true)
-        {
-            int chilidIndex = chooseHeapiFynode(data, n, currentIndex);
-            if (chilidIndex == currentIndex)
-            {
-                break;
-            }
-            else
-            {
-                std::swap(data[currentIndex], data[chilidIndex]);
-                currentIndex = chilidIndex;
-                // continue;
-            }
-        }
-    }
-
-public:
     //从下往上堆化
     void Heapify()
     {
@@ -146,48 +148,4 @@ private:
     std::function<std::string(T &a)> _toStringFunc;
 };
 
-template <class T,
-          class Container = std::vector<T>,
-          class Compare = std::less<typename Container::value_type>>
-class HeapSort
-{
-public:
-    //非原地 逐个pop出堆顶，故是降序
-    static std::vector<T> Sort(std::vector<T> &data)
-    {
-        Heap<T, Container, Compare> heap;
-        heap.setToStringFunc([](int &a) -> std::string {
-            return std::to_string(a);
-        });
-        for (int i = 0; i < data.size(); i++)
-        {
-            heap.push(data[i]);
-        }
-        std::vector<T> result;
-        while (!heap.empty())
-        {
-            T data;
-            heap.pop(data);
-            std::cout << " !" << heap.toString() << std::endl;
-            result.push_back(std::move(data));
-        }
-
-        return result;
-    }
-
-    //原地 逐个将堆顶与末尾值交换，在从上往下特化，故是升序
-    static void inPlaceSort(std::vector<T> &data)
-    {
-        Heap<T, Container, Compare>::buildHeap(data);
-
-        int k = data.size() - 1;
-        while (k > 1)
-        {
-            std::swap(data[1], data[k]);
-            k--;
-            Heap<T, Container, Compare>::HeapifyToDown(data, k, 1);
-        }
-        data.erase(data.begin());
-    }
-};
 #endif // __HEAP_H__

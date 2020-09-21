@@ -24,19 +24,6 @@ struct Node
     Node<T> *right;
 };
 
-template <class T>
-int deepth(Node<T> *tree)
-{
-    if (tree == nullptr)
-    {
-        return 0;
-    }
-    else
-    {
-        return std::max(tree->left, tree->right) + 1;
-    }
-}
-
 enum class Location
 {
     Left = 0,
